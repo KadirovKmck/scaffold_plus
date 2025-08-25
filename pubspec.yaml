@@ -1,7 +1,10 @@
 name: scaffold_plus
-description: "A new Flutter package project."
+description: >
+  Drop-in replacement for Flutter's Scaffold: background image layer, SafeArea toggles,
+  AnimatedSwitcher body transitions, tap-to-unfocus; proxies core Scaffold params.
+
 version: 0.0.1
-homepage:
+homepage: https://github.com/KadirovKmck/scaffold_plus
 
 environment:
   sdk: ^3.8.1
