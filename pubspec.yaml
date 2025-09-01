@@ -3,12 +3,11 @@ description: >
   Drop-in replacement for Flutter's Scaffold: background image layer, SafeArea toggles,
   AnimatedSwitcher body transitions, tap-to-unfocus; proxies core Scaffold params.
 
-version: 0.0.1
+version: 1.0.2
 homepage: https://github.com/KadirovKmck/scaffold_plus
 
 environment:
-  sdk: ^3.8.1
-  flutter: ">=1.17.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:

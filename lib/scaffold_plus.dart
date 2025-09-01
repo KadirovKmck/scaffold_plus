@@ -1,70 +1,149 @@
+library;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-/// A drop-in replacement over [Scaffold] that adds:
-/// 1) Background image layer
-/// 2) SafeArea toggles with custom paddings
-/// 3) AnimatedSwitcher for body transitions
-/// 4) Tap-to-unfocus behavior
+/// A sugar-coated drop-in replacement for [Scaffold].
 ///
-/// All common [Scaffold] params are proxied, so you can use it as a full
-/// Scaffold with extra sugar on top.
+/// Adds:
+/// 1) Optional background image layer.
+/// 2) SafeArea toggles with custom paddings.
+/// 3) [AnimatedSwitcher] for body transitions.
+/// 4) Tap-to-unfocus behavior.
+///
+/// All common [Scaffold] params are proxied, so you can
+/// use it as a full Scaffold with extras on top.
 class ScaffoldPlus extends StatelessWidget {
-  // ===== Custom additions =====
+  // ===== Modern API =====
+
+  /// Whether to show a background image layer.
   final bool useBackgroundImage;
+
+  /// Asset path for the background image. Used only when [useBackgroundImage] is true.
   final String? backgroundImage;
+
+  /// Solid background color below the (optional) image.
   final Color? backgroundColor;
+
+  /// Wrap body with [SafeArea] at the top side.
   final bool safeAreaTop;
+
+  /// Wrap body with [SafeArea] at the bottom side.
   final bool safeAreaBottom;
+
+  /// Horizontal padding inside the SafeArea (in logical pixels).
   final double? horizontalPadding;
+
+  /// Vertical padding inside the SafeArea (in logical pixels).
   final double? verticalPadding;
+
+  /// Duration of [AnimatedSwitcher] used for [body] transitions.
   final Duration switchDuration;
+
+  /// Curve of the incoming child for the [AnimatedSwitcher].
   final Curve switchInCurve;
+
+  /// Curve of the outgoing child for the [AnimatedSwitcher].
   final Curve switchOutCurve;
+
+  /// Called after unfocusing when user taps outside any focusable widget.
   final VoidCallback? onTapOutside;
 
-  // Backward compatibility (deprecated but supported)
+  // ===== Backward compatibility (kept; not used in docs) =====
   @Deprecated('Use backgroundImage instead')
-  final String? backgrounImage;
+  final String? backgrounImage; // legacy misspelling
+
   @Deprecated('Use useBackgroundImage instead')
-  final bool backgrounImageHave;
+  final bool backgroundImageHave;
+
   @Deprecated('Use safeAreaTop instead')
   final bool top;
+
   @Deprecated('Use horizontalPadding instead')
   final double? horizontal;
+
   @Deprecated('Use verticalPadding instead')
   final double? vertical;
+
   @Deprecated('Use onTapOutside instead')
-  final Function()? onTap;
+  final VoidCallback? onTap;
 
   // ===== Proxied Scaffold params =====
+
+  /// Key passed to underlying [Scaffold].
   final Key? scaffoldKey;
+
+  /// Optional app bar.
   final PreferredSizeWidget? appBar;
+
+  /// Main content of the screen. When changed, transitions via [AnimatedSwitcher].
   final Widget? body;
+
+  /// Optional FAB.
   final Widget? floatingActionButton;
+
+  /// FAB location.
   final FloatingActionButtonLocation? floatingActionButtonLocation;
+
+  /// FAB animator.
   final FloatingActionButtonAnimator? floatingActionButtonAnimator;
+
+  /// Footer buttons.
   final List<Widget>? persistentFooterButtons;
+
+  /// Alignment for footer buttons.
   final AlignmentDirectional persistentFooterAlignment;
+
+  /// Left drawer widget.
   final Widget? drawer;
+
+  /// Drawer open/close callback.
   final ValueChanged<bool>? onDrawerChanged;
+
+  /// Right drawer widget.
   final Widget? endDrawer;
+
+  /// Right drawer open/close callback.
   final ValueChanged<bool>? onEndDrawerChanged;
+
+  /// Bottom navigation bar.
   final Widget? bottomNavigationBar;
+
+  /// Persistent bottom sheet.
   final Widget? bottomSheet;
+
+  /// Whether to avoid inset when keyboard is shown.
   final bool? resizeToAvoidBottomInset;
+
+  /// Whether this is the primary scaffold.
   final bool primary;
+
+  /// Drawer drag behavior.
   final DragStartBehavior drawerDragStartBehavior;
+
+  /// Whether body extends behind bottom navigation bar.
   final bool extendBody;
+
+  /// Whether body extends behind app bar.
   final bool extendBodyBehindAppBar;
+
+  /// Scrim color for drawer.
   final Color? drawerScrimColor;
+
+  /// Edge drag width for drawer.
   final double? drawerEdgeDragWidth;
+
+  /// Enable left drawer drag gesture.
   final bool drawerEnableOpenDragGesture;
+
+  /// Enable right drawer drag gesture.
   final bool endDrawerEnableOpenDragGesture;
+
+  /// Restoration id for state restoration.
   final String? restorationId;
 
   const ScaffoldPlus({
-    // Custom
+    // Modern API
     super.key,
     this.useBackgroundImage = false,
     this.backgroundImage,
@@ -73,14 +152,14 @@ class ScaffoldPlus extends StatelessWidget {
     this.safeAreaBottom = false,
     this.horizontalPadding,
     this.verticalPadding,
-    this.switchDuration = const Duration(milliseconds: 800),
+    this.switchDuration = const Duration(milliseconds: 300),
     this.switchInCurve = Curves.easeInOut,
     this.switchOutCurve = Curves.easeInOut,
     this.onTapOutside,
 
-    // Back-compat (don’t remove until you мигрируешь в проекте)
+    // Legacy (kept for source-compat)
     this.backgrounImage,
-    this.backgrounImageHave = false,
+    this.backgroundImageHave = false,
     this.top = true,
     this.horizontal,
     this.vertical,
@@ -115,21 +194,31 @@ class ScaffoldPlus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Migrate deprecated fields to new ones if provided
-    final effectiveUseBg = useBackgroundImage || backgrounImageHave;
-    final effectiveBgImage =
-        backgroundImage ?? backgrounImage ?? 'assets/images/bg.png';
-    final effectiveHorizontal = horizontalPadding ?? horizontal ?? 0;
-    final effectiveVertical = verticalPadding ?? vertical ?? 0;
-    final effectiveSafeTop = safeAreaTop && top; // keep legacy toggle respected
+    // Map legacy -> modern with local ignores so analyzer stays green on pub.dev.
+    // ignore: deprecated_member_use_from_same_package
+    final bool legacyUseBg = backgroundImageHave;
+    // ignore: deprecated_member_use_from_same_package
+    final String? legacyBg = backgrounImage;
+    // ignore: deprecated_member_use_from_same_package
+    final bool legacyTop = top;
+    // ignore: deprecated_member_use_from_same_package
+    final double? legacyH = horizontal;
+    // ignore: deprecated_member_use_from_same_package
+    final double? legacyV = vertical;
+
+    final bool effectiveUseBg = useBackgroundImage || legacyUseBg;
+    final String? effectiveBg = backgroundImage ?? legacyBg;
+    final double effectiveHorizontal = horizontalPadding ?? legacyH ?? 0;
+    final double effectiveVertical = verticalPadding ?? legacyV ?? 0;
+    final bool effectiveSafeTop = safeAreaTop && legacyTop;
 
     return GestureDetector(
+      behavior: HitTestBehavior.deferToChild,
       onTap: () {
-        // 1) снятие фокуса
         FocusScope.of(context).unfocus();
-        // 2) пользовательский колбэк
         onTapOutside?.call();
-        onTap?.call(); // legacy
+        // ignore: deprecated_member_use_from_same_package
+        onTap?.call();
       },
       child: Scaffold(
         key: scaffoldKey,
@@ -145,34 +234,29 @@ class ScaffoldPlus extends StatelessWidget {
         drawerEnableOpenDragGesture: drawerEnableOpenDragGesture,
         endDrawerEnableOpenDragGesture: endDrawerEnableOpenDragGesture,
         restorationId: restorationId,
-
         drawer: drawer,
         onDrawerChanged: onDrawerChanged,
         endDrawer: endDrawer,
         onEndDrawerChanged: onEndDrawerChanged,
-
         floatingActionButton: floatingActionButton,
         floatingActionButtonLocation: floatingActionButtonLocation,
         floatingActionButtonAnimator: floatingActionButtonAnimator,
-
         persistentFooterButtons: persistentFooterButtons,
         persistentFooterAlignment: persistentFooterAlignment,
-
         bottomNavigationBar: bottomNavigationBar,
         bottomSheet: bottomSheet,
-
         body: AnimatedSwitcher(
           duration: switchDuration,
           switchInCurve: switchInCurve,
           switchOutCurve: switchOutCurve,
           child: Container(
-            key: ValueKey<Object?>(body?.key), // стабильная анимация
+            key: ValueKey<Object?>(body?.key),
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration(
-              image: effectiveUseBg
+              image: (effectiveUseBg && effectiveBg != null)
                   ? DecorationImage(
-                      image: AssetImage(effectiveBgImage),
+                      image: AssetImage(effectiveBg),
                       fit: BoxFit.cover,
                     )
                   : null,
